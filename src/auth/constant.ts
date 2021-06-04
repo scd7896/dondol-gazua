@@ -2,4 +2,4 @@ export const jwtConstants = {
   secret: 'secretKey',
 };
 
-export const salt = 29;
+export const salt = 10;

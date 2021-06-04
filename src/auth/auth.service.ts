@@ -19,8 +19,9 @@ export class AuthService {
     return null;
   }
 
-  async login(user: User) {
-    const payload = { email: user.email, id: user.id };
+  async login(user: Pick<User, 'email' | 'password'>) {
+    const result = await this.validateUser(user.email, user.password);
+    const payload = { email: result.email, id: result.id };
 
     return {
       accessToken: sign(payload, jwtConstants.secret, { expiresIn: '24h' }),

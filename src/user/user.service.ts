@@ -18,10 +18,11 @@ export class UserService {
     if (user) {
       return null;
     } else {
+      const hashedPassword = await bcrypt.hash(password, salt);
       return this.prisma.user.create({
         data: {
           email,
-          password,
+          password: hashedPassword,
         },
       });
     }
@@ -29,10 +30,6 @@ export class UserService {
 
   async findOne(email: string) {
     return this.prisma.user.findUnique({
-      select: {
-        password: true,
-        email: true,
-      },
       where: {
         email,
       },

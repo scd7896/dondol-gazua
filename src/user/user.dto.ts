@@ -1,5 +1,5 @@
 import { User } from '.prisma/client';
 
-export class CreateUserDto {
+export class UserDto {
   user: Pick<User, 'email' | 'password'>;
 }
