@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
@@ -31,13 +32,13 @@ export class PostController {
 
   @Put(':id')
   @Roles('user')
-  changePost(@Body() post: PostDto, @Param('id') id: string) {
-    return this.postService.updatePost(parseInt(id, 10), post);
+  changePost(@Body() post: PostDto, @Param('id', ParseIntPipe) id: number) {
+    return this.postService.updatePost(id, post);
   }
 
   @Delete(':id')
   @Roles('user')
-  deletePost(@Param('id') id: string) {
-    return this.postService.deletePost(parseInt(id, 10));
+  deletePost(@Param('id', ParseIntPipe) id: number) {
+    return this.postService.deletePost(id);
   }
 }
