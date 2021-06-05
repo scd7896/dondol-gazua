@@ -16,6 +16,6 @@ export class UploadController {
   async upload(@UploadedFiles() files: Array<File>) {
     const promises = files.map((file) => this.uploadService.upload(file));
     const result = Promise.all(promises);
-    return { payload: result };
+    return result;
   }
 }

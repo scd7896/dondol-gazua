@@ -1,11 +1,12 @@
 import { Post } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'lib/prisma.service';
+import { UploadService } from 'src/upload/upload.service';
 import { PostDto } from './dto/post.dto';
 
 @Injectable()
 export class PostService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private upload: UploadService) {}
 
   async findAll(): Promise<Post[]> {
     return this.prisma.post.findMany();
@@ -44,12 +45,9 @@ export class PostService {
         postId: beforeDate.id,
       },
     });
+    const postImagesMap = {};
 
-    if (post.images) {
-      await this.prisma.image.createMany({
-        data: post.images.map((path) => ({ path, postId: beforeDate.id })),
-      });
-    }
+    post.images?.map((path) => (postImagesMap[path] = path));
 
     const updateData = await this.prisma.post.update({
       where: { id },
@@ -58,6 +56,9 @@ export class PostService {
         contents: post.contents,
         meetDate: post.meetDate,
         updatedAt: new Date(),
+        images: {
+          create: post.images?.map((path) => ({ path })),
+        },
       },
       include: {
         images: true,
@@ -65,12 +66,14 @@ export class PostService {
     });
     const removeImages = [];
     beforeDate.images?.map(({ path }) => {
-      removeImages.push(path);
+      if (!postImagesMap[path]) removeImages.push(path);
     });
+    const promises = removeImages.map((path) => this.upload.delete(path));
+    await Promise.all(promises);
     await this.prisma.image.deleteMany({
       where: {
         path: {
-          in: removeImages,
+          in: beforeDate.images.map(({ path }) => path),
         },
       },
     });
@@ -87,7 +90,8 @@ export class PostService {
       where: { id },
       include: { images: true },
     });
-    result.images.map(({ path }) => console.log(path, '삭제'));
+    const promises = result.images.map(({ path }) => this.upload.delete(path));
+    await Promise.all(promises);
     return '삭제 완료';
   }
 }

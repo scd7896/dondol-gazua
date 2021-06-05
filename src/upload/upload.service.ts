@@ -1,9 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { S3 } from 'aws-sdk';
+import { DeleteObjectRequest } from 'aws-sdk/clients/s3';
 
 import * as path from 'path';
 @Injectable()
 export class UploadService {
+  bucketS3 = 'static-yapp-helper';
+  async delete(key: string) {
+    const s3 = this.getS3();
+    const params: DeleteObjectRequest = {
+      Key: key,
+      Bucket: this.bucketS3,
+    };
+    return new Promise((resolve, reject) => {
+      s3.deleteObject(params, (err, _) => {
+        if (err) {
+          Logger.error(err);
+          reject(err.message);
+        }
+        resolve('sucess');
+      });
+    });
+  }
+
   async upload(files) {
     const { originalname } = files;
     const bucketS3 = 'static-yapp-helper';
