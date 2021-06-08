@@ -13,13 +13,21 @@ const prisma_service_1 = require("../lib/prisma.service");
 const post_module_1 = require("./post/post.module");
 const auth_module_1 = require("./auth/auth.module");
 const core_1 = require("@nestjs/core");
+const config_1 = require("@nestjs/config");
 const roles_guard_1 = require("./roles/roles.guard");
 const upload_module_1 = require("./upload/upload.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     common_1.Module({
-        imports: [user_module_1.UserModule, prisma_service_1.PrismaService, post_module_1.PostModule, auth_module_1.AuthModule, upload_module_1.UploadModule],
+        imports: [
+            user_module_1.UserModule,
+            prisma_service_1.PrismaService,
+            post_module_1.PostModule,
+            auth_module_1.AuthModule,
+            upload_module_1.UploadModule,
+            config_1.ConfigModule.forRoot(),
+        ],
         providers: [
             {
                 provide: core_1.APP_GUARD,

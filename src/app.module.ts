@@ -6,11 +6,19 @@ import { PostModule } from './post/post.module';
 
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
 import { RolesGuard } from './roles/roles.guard';
 import { UploadModule } from './upload/upload.module';
 
 @Module({
-  imports: [UserModule, PrismaService, PostModule, AuthModule, UploadModule],
+  imports: [
+    UserModule,
+    PrismaService,
+    PostModule,
+    AuthModule,
+    UploadModule,
+    ConfigModule.forRoot(),
+  ],
   providers: [
     {
       provide: APP_GUARD,
