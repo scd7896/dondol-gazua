@@ -2,14 +2,53 @@ import { Post } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'lib/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
+import { basePath } from './constants';
 import { PostDto } from './dto/post.dto';
 
 @Injectable()
 export class PostService {
   constructor(private prisma: PrismaService, private upload: UploadService) {}
+  async findOne(id: number) {
+    const target = await this.prisma.post.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        images: true,
+      },
+    });
 
-  async findAll(): Promise<Post[]> {
-    return this.prisma.post.findMany();
+    target.images = target.images.map((image) => ({
+      ...image,
+      path: basePath + image.path,
+    }));
+
+    return target;
+  }
+
+  async findAll(
+    size = 30,
+    number = 1,
+  ): Promise<{
+    payload: Pick<
+      Post,
+      'title' | 'id' | 'meetDate' | 'updatedAt' | 'createdAt'
+    >[];
+    count: number;
+  }> {
+    const list = await this.prisma.post.findMany({
+      take: size,
+      skip: (number - 1) * size,
+      select: {
+        title: true,
+        id: true,
+        meetDate: true,
+        updatedAt: true,
+        createdAt: true,
+      },
+    });
+    const count = await this.prisma.post.count();
+    return { payload: list, count };
   }
 
   async createPost(post: PostDto): Promise<Post> {
@@ -45,9 +84,13 @@ export class PostService {
         postId: beforeDate.id,
       },
     });
+
     const postImagesMap = {};
 
-    post.images?.map((path) => (postImagesMap[path] = path));
+    post.images?.map((path) => {
+      const pathId = path.split(basePath).pop();
+      postImagesMap[pathId] = pathId;
+    });
 
     const updateData = await this.prisma.post.update({
       where: { id },
@@ -57,7 +100,9 @@ export class PostService {
         meetDate: post.meetDate,
         updatedAt: new Date(),
         images: {
-          create: post.images?.map((path) => ({ path })),
+          create: post.images?.map((path) => ({
+            path: path.split(basePath).pop(),
+          })),
         },
       },
       include: {
@@ -70,13 +115,6 @@ export class PostService {
     });
     const promises = removeImages.map((path) => this.upload.delete(path));
     await Promise.all(promises);
-    await this.prisma.image.deleteMany({
-      where: {
-        path: {
-          in: beforeDate.images.map(({ path }) => path),
-        },
-      },
-    });
     return updateData;
   }
 
@@ -90,7 +128,9 @@ export class PostService {
       where: { id },
       include: { images: true },
     });
-    const promises = result.images.map(({ path }) => this.upload.delete(path));
+    const promises = result.images.map(({ path }) =>
+      this.upload.delete(path.split(basePath).pop()),
+    );
     await Promise.all(promises);
     return '삭제 완료';
   }

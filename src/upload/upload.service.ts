@@ -42,6 +42,7 @@ export class UploadService {
       Bucket: bucket,
       Key: fileName,
       Body: file,
+      ACL: 'public-read',
     };
     return new Promise((resolve, reject) => {
       s3.upload(params, (err, data) => {

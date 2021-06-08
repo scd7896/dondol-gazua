@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { Roles } from 'src/roles/roles.decorator';
 import { PostDto } from './dto/post.dto';
@@ -19,8 +20,17 @@ export class PostController {
 
   @Get()
   @Roles('user')
-  allFind() {
-    return this.postService.findAll();
+  allFind(
+    @Query('size', ParseIntPipe) size: number,
+    @Query('number', ParseIntPipe) number: number,
+  ) {
+    return this.postService.findAll(size, number);
+  }
+
+  @Get(':id')
+  @Roles('user')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.postService.findOne(id);
   }
 
   @Post()
