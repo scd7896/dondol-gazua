@@ -18,4 +18,16 @@ export class AuthController {
     }
     return null;
   }
+
+  @Post('check')
+  async check(@Body() { token }: { token: string }, @Res() res: Response) {
+    try {
+      const user = await this.authService.check(token);
+      if (user) res.json(user);
+      else throw '만료된 유저입니다';
+    } catch (err) {
+      res.status(HttpStatus.BAD_REQUEST);
+      res.json({ message: '만료되었습니다. 다시 로그인 해주세요' });
+    }
+  }
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { User } from '.prisma/client';
-import { sign } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
 import { jwtConstants } from './constant';
 
 @Injectable()
@@ -36,5 +36,10 @@ export class AuthService {
     return {
       accessToken: sign(payload, jwtConstants.secret, { expiresIn: '24h' }),
     };
+  }
+
+  async check(token: string) {
+    const user = verify(token, jwtConstants.secret);
+    return user;
   }
 }

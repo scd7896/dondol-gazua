@@ -5,4 +5,5 @@ export declare class AuthService {
     constructor(userService: UserService);
     validateUser(username: string, pass: string): Promise<any>;
     login(user: Pick<User, 'email' | 'password'>): Promise<any>;
+    check(token: string): Promise<string | object>;
 }
