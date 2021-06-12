@@ -23,8 +23,8 @@ let AuthController = class AuthController {
     async login({ user }, res) {
         try {
             const token = await this.authService.login(user);
-            if (!token)
-                throw '유저가 잘못 되었습니다.';
+            if (token.status === 'error')
+                throw token.message;
             res.json(token);
         }
         catch (err) {
@@ -32,6 +32,19 @@ let AuthController = class AuthController {
             res.json({ message: err });
         }
         return null;
+    }
+    async check({ token }, res) {
+        try {
+            const user = await this.authService.check(token);
+            if (user)
+                res.json(user);
+            else
+                throw '만료된 유저입니다';
+        }
+        catch (err) {
+            res.status(common_1.HttpStatus.BAD_REQUEST);
+            res.json({ message: '만료되었습니다. 다시 로그인 해주세요' });
+        }
     }
 };
 __decorate([
@@ -41,6 +54,13 @@ __decorate([
     __metadata("design:paramtypes", [user_dto_1.UserDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
+__decorate([
+    common_1.Post('check'),
+    __param(0, common_1.Body()), __param(1, common_1.Res()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "check", null);
 AuthController = __decorate([
     common_1.Controller('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

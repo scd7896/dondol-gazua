@@ -32,19 +32,34 @@ let AuthService = class AuthService {
     }
     async validateUser(username, pass) {
         const user = await this.userService.findOne(username);
+        if (!user)
+            return {
+                status: 'error',
+                message: '그 이메일은 없는 이메일입니다.',
+            };
         if (user && bcrypt.compareSync(pass, user.password)) {
             const { password } = user, result = __rest(user, ["password"]);
             return result;
         }
-        return null;
+        return {
+            status: 'error',
+            message: '비밀번호를 잘못 입력하셨습니다.',
+        };
     }
     async login(user) {
         const result = await this.validateUser(user.email, user.password);
-        if (!result)
-            return null;
+        if (result.status === 'error')
+            return result;
         const payload = { email: result.email, id: result.id };
         return {
-            accessToken: jsonwebtoken_1.sign(payload, constant_1.jwtConstants.secret, { expiresIn: '24h' }),
+            accessToken: jsonwebtoken_1.sign(payload, constant_1.jwtConstants.secret, { expiresIn: '48h' }),
+        };
+    }
+    async check(token) {
+        const result = jsonwebtoken_1.verify(token, constant_1.jwtConstants.secret);
+        const payload = { email: result.email, id: result.id };
+        return {
+            accessToken: jsonwebtoken_1.sign(payload, constant_1.jwtConstants.secret, { expiresIn: '48h' }),
         };
     }
 };
