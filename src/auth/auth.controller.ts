@@ -10,7 +10,7 @@ export class AuthController {
   async login(@Body() { user }: UserDto, @Res() res: Response) {
     try {
       const token = await this.authService.login(user);
-      if (!token) throw '유저가 잘못 되었습니다.';
+      if (token.status === 'error') throw token.message;
       res.json(token);
     } catch (err) {
       res.status(HttpStatus.BAD_REQUEST);

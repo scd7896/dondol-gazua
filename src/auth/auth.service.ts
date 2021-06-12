@@ -11,19 +11,26 @@ export class AuthService {
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(username);
-
+    if (!user)
+      return {
+        status: 'error',
+        message: '그 이메일은 없는 이메일입니다.',
+      };
     if (user && bcrypt.compareSync(pass, user.password)) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...result } = user;
       return result;
     }
-    return null;
+    return {
+      status: 'error',
+      message: '비밀번호를 잘못 입력하셨습니다.',
+    };
   }
 
   async login(user: Pick<User, 'email' | 'password'>) {
     const result = await this.validateUser(user.email, user.password);
 
-    if (!result) return null;
+    if (result.status === 'error') return result;
     const payload = { email: result.email, id: result.id };
 
     return {
