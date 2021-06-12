@@ -34,12 +34,19 @@ export class AuthService {
     const payload = { email: result.email, id: result.id };
 
     return {
-      accessToken: sign(payload, jwtConstants.secret, { expiresIn: '24h' }),
+      accessToken: sign(payload, jwtConstants.secret, { expiresIn: '48h' }),
     };
   }
 
   async check(token: string) {
-    const user = verify(token, jwtConstants.secret);
-    return user;
+    const result = verify(token, jwtConstants.secret) as {
+      email: string;
+      id: number;
+    };
+    const payload = { email: result.email, id: result.id };
+
+    return {
+      accessToken: sign(payload, jwtConstants.secret, { expiresIn: '48h' }),
+    };
   }
 }
